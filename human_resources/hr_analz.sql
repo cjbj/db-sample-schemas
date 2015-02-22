@@ -52,7 +52,7 @@ SET PAGESIZE 100
 SET ECHO OFF
 
 EXECUTE dbms_stats.gather_schema_stats( -
-        'HR'                            ,       -
+        '&1'                            ,       -
         granularity => 'ALL'            ,       -
         cascade => TRUE                 ,       -
         block_sample => TRUE            );

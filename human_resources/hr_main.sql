@@ -35,6 +35,7 @@ rem NOTES
 rem   Run as SYS or SYSTEM
 rem
 rem MODIFIED   (MM/DD/YY)
+Rem   cjbj      02/22/15 - custom schema name
 rem   jmadduku  02/18/11 - Grant Unlimited Tablespace priv with RESOURCE
 rem   celsbern  06/17/10 - fixing bug 9733839
 rem   pthornto  07/16/04 - obsolete 'connect' role 
@@ -67,6 +68,12 @@ PROMPT
 PROMPT specify log path as parameter 5:
 DEFINE log_path = &5
 PROMPT
+PROMPT specify actual schema name as parameter 6:
+DEFINE user_name = &6
+PROMPT
+PROMPT specify connection string as parameter 7:
+DEFINE connect_string = &7
+PROMPT
 
 -- The first dot in the spool command below is 
 -- the SQL*Plus concatenation character
@@ -78,7 +85,7 @@ REM =======================================================
 REM cleanup section
 REM =======================================================
 
-DROP USER hr CASCADE;
+DROP USER &user_name CASCADE;
 
 REM =======================================================
 REM create user
@@ -87,28 +94,28 @@ REM will succeed regardless of the existence of the
 REM DEMO and TEMP tablespaces 
 REM =======================================================
 
-CREATE USER hr IDENTIFIED BY &pass;
+CREATE USER &user_name IDENTIFIED BY &pass;
 
-ALTER USER hr DEFAULT TABLESPACE &tbs
+ALTER USER &user_name DEFAULT TABLESPACE &tbs
               QUOTA UNLIMITED ON &tbs;
 
-ALTER USER hr TEMPORARY TABLESPACE &ttbs;
+ALTER USER &user_name TEMPORARY TABLESPACE &ttbs;
 
-GRANT CREATE SESSION, CREATE VIEW, ALTER SESSION, CREATE SEQUENCE TO hr;
-GRANT CREATE SYNONYM, CREATE DATABASE LINK, RESOURCE , UNLIMITED TABLESPACE TO hr;
+GRANT CREATE SESSION, CREATE VIEW, ALTER SESSION, CREATE SEQUENCE TO &user_name;
+GRANT CREATE SYNONYM, CREATE DATABASE LINK, RESOURCE , UNLIMITED TABLESPACE TO &user_name;
 
 REM =======================================================
 REM grants from sys schema
 REM =======================================================
 
-CONNECT sys/&pass_sys AS SYSDBA;
-GRANT execute ON sys.dbms_stats TO hr;
+CONNECT sys/&pass_sys@&connect_string AS SYSDBA;
+GRANT execute ON sys.dbms_stats TO &user_name;
 
 REM =======================================================
-REM create hr schema objects
+REM create &user_name schema objects
 REM =======================================================
 
-CONNECT hr/&pass
+CONNECT &user_name/&pass@&connect_string
 ALTER SESSION SET NLS_LANGUAGE=American;
 ALTER SESSION SET NLS_TERRITORY=America;
 
@@ -146,6 +153,6 @@ ALTER SESSION SET NLS_TERRITORY=America;
 -- gather schema statistics
 --
 
-@__SUB__CWD__/human_resources/hr_analz
+@__SUB__CWD__/human_resources/hr_analz &user_name
 
 spool off
